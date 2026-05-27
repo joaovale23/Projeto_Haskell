@@ -1,4 +1,5 @@
 packages: .
 
 constraints: warp < 3.4
+           , postgresql-libpq < 0.10
 
