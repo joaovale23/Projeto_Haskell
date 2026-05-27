@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "mafs/core.css";
+@import "mafs/font.css";
+@import "katex/dist/katex.min.css";
+
+html, body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
