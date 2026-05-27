@@ -1,5 +1,28 @@
+# Haskell
 dist/
 dist-newstyle/
 .ghc.environment.*
 *.hi
 *.o
+
+# IDE / Tooling
+.claude/
+
+# Referência legada (não versionar)
+calculo_para_devs/
+
+# Env / segredos
+.env
+.env.local
+
+# Frontend (Next.js)
+web/node_modules/
+web/.next/
+web/out/
+web/.turbo/
+web/next-env.d.ts
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
