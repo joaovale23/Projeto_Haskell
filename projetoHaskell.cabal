@@ -11,16 +11,113 @@ extra-doc-files:    CHANGELOG.md
 common warnings
     ghc-options: -Wall
 
+common deps
+    build-depends:    base >= 4.17 && < 5,
+                      text,
+                      bytestring,
+                      aeson,
+                      mtl,
+                      transformers,
+                      unliftio,
+                      time
+
+library
+    import:           warnings, deps
+    hs-source-dirs:   src
+    default-language: Haskell2010
+    default-extensions:
+        OverloadedStrings
+        DeriveGeneric
+        DerivingStrategies
+        GeneralizedNewtypeDeriving
+        RecordWildCards
+        LambdaCase
+    exposed-modules:
+        App.Env
+        App.Monad
+        Config.AppConfig
+        Database.Pool
+        Database.Schema
+        Domain.Types
+        Domain.Module
+        Domain.Password
+        Domain.Exercise
+        Domain.Progress
+        Domain.Roadmap
+        Domain.Diagnostic
+        Domain.Permissions
+        Repositories.UserRepo
+        Repositories.ModuleRepo
+        Repositories.LessonRepo
+        Repositories.ExerciseRepo
+        Repositories.ProgressRepo
+        Repositories.DiagnosticRepo
+        Services.AuthService
+        Services.ModuleService
+        Services.LessonService
+        Services.PermissionService
+        Services.ExerciseService
+        Services.ProgressService
+        Services.RoadmapService
+        Services.DiagnosticService
+        API.Types
+        API.Routes
+        Handlers.Auth
+        Handlers.Module
+        Handlers.Lesson
+        Handlers.Exercise
+        Handlers.Progress
+        Handlers.Roadmap
+        Handlers.Diagnostic
+        Server
+    build-depends:
+        servant,
+        servant-server,
+        wai,
+        wai-cors,
+        warp,
+        persistent,
+        persistent-postgresql,
+        persistent-template,
+        monad-logger,
+        resource-pool,
+        cryptonite,
+        memory,
+        base16-bytestring,
+        scientific,
+        containers
+
 executable projetoHaskell
-    import:           warnings
+    import:           warnings, deps
     main-is:          Main.hs
     ghc-options:      -threaded -rtsopts -with-rtsopts=-N
-    other-modules:    Server.Routes
-    build-depends:    base,
-                      servant,
-                      servant-server,
-                      warp,
-                      wai,
-                      text
     hs-source-dirs:   app
     default-language: Haskell2010
+    build-depends:
+        projetoHaskell,
+        warp,
+        wai
+
+test-suite projetoHaskell-test
+    import:           warnings, deps
+    type:             exitcode-stdio-1.0
+    hs-source-dirs:   test
+    main-is:          Spec.hs
+    default-language: Haskell2010
+    default-extensions:
+        OverloadedStrings
+    other-modules:
+        Unit.Domain.ModuleSpec
+        Unit.Domain.PasswordSpec
+        Unit.Domain.ExerciseSpec
+        Unit.Domain.ProgressSpec
+        Unit.Domain.RoadmapSpec
+        Unit.Domain.DiagnosticSpec
+        Unit.Domain.PermissionsSpec
+        Unit.Services.AuthServiceSpec
+    build-depends:
+        projetoHaskell,
+        hspec,
+        containers
+    build-tool-depends:
+        hspec-discover:hspec-discover
