@@ -40,12 +40,17 @@ validatePassword :: Text -> Bool
 validatePassword pwd = T.length pwd >= 6
 
 register
-  :: Text   -- ^ email
-  -> Text   -- ^ password (plain)
-  -> Text   -- ^ name
+  :: Text         -- ^ email
+  -> Text         -- ^ password (plain)
+  -> Text         -- ^ name
   -> Role
+  -> Maybe Text   -- ^ curso
+  -> Maybe Text   -- ^ matrícula
+  -> Maybe Text   -- ^ semestre
+  -> Maybe Text   -- ^ turno
+  -> Maybe Text   -- ^ disciplina
   -> AppM (Either RegisterError (Entity User))
-register email password name role
+register email password name role course enrollment semester shift discipline
   | not (validateEmail email)    = pure (Left InvalidEmail)
   | not (validatePassword password) = pure (Left PasswordTooShort)
   | otherwise = do
@@ -60,6 +65,11 @@ register email password name role
                 , userName         = name
                 , userRole         = role
                 , userCreatedAt    = now
+                , userCourse       = course
+                , userEnrollment   = enrollment
+                , userSemester     = semester
+                , userShift        = shift
+                , userDiscipline   = discipline
                 }
           uid <- runDb (UserRepo.insertUser user)
           pure (Right (Entity uid user))
