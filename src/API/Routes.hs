@@ -10,6 +10,8 @@ module API.Routes
   , ProgressAPI
   , RoadmapAPI
   , DiagnosticAPI
+  , DashboardAPI
+  , ProfileAPI
   , apiProxy
   ) where
 
@@ -41,11 +43,12 @@ type LessonAPI =
   :<|> "lessons" :> UserHeader :> ReqBody '[JSON] LessonRequest :> Post '[JSON] LessonResponse
   :<|> "lessons" :> Capture "id" Int64 :> UserHeader :> ReqBody '[JSON] LessonRequest :> Put '[JSON] LessonResponse
   :<|> "lessons" :> Capture "id" Int64 :> UserHeader :> Delete '[JSON] NoContent
-  :<|> "lessons" :> Capture "id" Int64 :> "exercises" :> Get '[JSON] [ExerciseResponse]
+  :<|> "lessons" :> Capture "id" Int64 :> "exercises" :> UserHeader :> Get '[JSON] [ExerciseResponse]
+  :<|> "lessons" :> Capture "id" Int64 :> "responses" :> UserHeader :> Get '[JSON] [ExerciseResponseEntry]
 
 -- Exercises -----------------------------------------------------------
 type ExerciseAPI =
-       "exercises" :> Capture "id" Int64 :> Get '[JSON] ExerciseResponse
+       "exercises" :> Capture "id" Int64 :> UserHeader :> Get '[JSON] ExerciseResponse
   :<|> "exercises" :> UserHeader :> ReqBody '[JSON] ExerciseRequest :> Post '[JSON] ExerciseResponse
   :<|> "exercises" :> Capture "id" Int64 :> UserHeader :> ReqBody '[JSON] ExerciseRequest :> Put '[JSON] ExerciseResponse
   :<|> "exercises" :> Capture "id" Int64 :> UserHeader :> Delete '[JSON] NoContent
@@ -67,6 +70,16 @@ type DiagnosticAPI =
   :<|> "diagnostic" :> "submit"    :> UserHeader :> ReqBody '[JSON] DiagnosticSubmission :> Post '[JSON] DiagnosticResultResponse
   :<|> "diagnostic" :> "result"    :> UserHeader :> Get '[JSON] DiagnosticResultResponse
 
+-- Dashboard (professor) -----------------------------------------------
+type DashboardAPI =
+       "dashboard" :> UserHeader :> Get '[JSON] DashboardResponse
+
+-- Profile -------------------------------------------------------------
+type ProfileAPI =
+       "profile" :> UserHeader :> Get '[JSON] ProfileResponse
+  :<|> "profile" :> UserHeader :> ReqBody '[JSON] ProfileRequest :> Put '[JSON] ProfileResponse
+  :<|> "profile" :> UserHeader :> Delete '[JSON] NoContent
+
 -- Top-level -----------------------------------------------------------
 type API =
        AuthAPI
@@ -76,6 +89,8 @@ type API =
   :<|> ProgressAPI
   :<|> RoadmapAPI
   :<|> DiagnosticAPI
+  :<|> DashboardAPI
+  :<|> ProfileAPI
 
 apiProxy :: Proxy API
 apiProxy = Proxy
