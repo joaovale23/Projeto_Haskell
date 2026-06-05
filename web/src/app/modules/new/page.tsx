@@ -3,14 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/api";
+import { useRequireRole } from "@/lib/useRequireRole";
 
 export default function NewModulePage() {
+  const { ready, allowed } = useRequireRole("Teacher");
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
-  const [orderIdx, setOrderIdx] = useState(1);
-  const [prereq, setPrereq] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,10 +20,10 @@ export default function NewModulePage() {
     try {
       await api.createModule({
         mrqTitle: title,
-        mrqSlug: slug,
+        mrqSlug: slugify(title), // gerado do título; backend garante unicidade
         mrqDescription: description,
-        mrqOrderIdx: orderIdx,
-        mrqPrerequisiteId: prereq ? Number(prereq) : null,
+        mrqOrderIdx: 0, // ignorado: a posição é atribuída automaticamente pelo backend
+        mrqPrerequisiteId: null,
       });
       router.push("/modules");
     } catch (err) {
@@ -33,6 +32,9 @@ export default function NewModulePage() {
       setLoading(false);
     }
   }
+
+  if (!ready) return <p className="text-slate-400">Carregando...</p>;
+  if (!allowed) return null;
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
@@ -46,37 +48,12 @@ export default function NewModulePage() {
             className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
           />
         </Field>
-        <Field label="Slug (identificador na URL)">
-          <input
-            required
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
-          />
-        </Field>
         <Field label="Descrição">
           <textarea
             required
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
-          />
-        </Field>
-        <Field label="Ordem">
-          <input
-            type="number"
-            required
-            value={orderIdx}
-            onChange={(e) => setOrderIdx(Number(e.target.value))}
-            className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
-          />
-        </Field>
-        <Field label="ID do pré-requisito (opcional)">
-          <input
-            type="number"
-            value={prereq}
-            onChange={(e) => setPrereq(e.target.value)}
             className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
           />
         </Field>
@@ -100,4 +77,14 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       {children}
     </label>
   );
+}
+
+// Gera um identificador de URL a partir do título (sem acentos, minúsculo).
+function slugify(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
