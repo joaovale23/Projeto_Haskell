@@ -18,21 +18,25 @@ listModules = runDb ModuleRepo.listAll
 getModule :: ModuleId -> AppM (Maybe Module)
 getModule = runDb . ModuleRepo.findById
 
+-- | Cria o módulo na próxima posição livre (ordenação automática) e devolve o
+-- id junto da posição atribuída.
 createModule
   :: Text          -- ^ title
   -> Text          -- ^ slug
   -> Text          -- ^ description
-  -> Int           -- ^ orderIdx
   -> Maybe ModuleId
-  -> AppM ModuleId
-createModule title slug desc idx prereq =
-  runDb (ModuleRepo.create Module
+  -> AppM (ModuleId, Int)
+createModule title slug desc prereq = runDb $ do
+  idx   <- ModuleRepo.nextOrderIdx
+  slug' <- ModuleRepo.findFreeSlug slug
+  mid   <- ModuleRepo.create Module
     { moduleTitle          = title
-    , moduleSlug           = slug
+    , moduleSlug           = slug'
     , moduleDescription    = desc
     , moduleOrderIdx       = idx
     , modulePrerequisiteId = prereq
-    })
+    }
+  pure (mid, idx)
 
 updateModule
   :: ModuleId
@@ -51,5 +55,8 @@ updateModule mid title slug desc idx prereq =
     , modulePrerequisiteId = prereq
     })
 
+-- | Exclui em cascata e renumera a sequência de módulos.
 deleteModule :: ModuleId -> AppM ()
-deleteModule = runDb . ModuleRepo.delete
+deleteModule mid = runDb $ do
+  ModuleRepo.deleteCascade mid
+  ModuleRepo.resequence
