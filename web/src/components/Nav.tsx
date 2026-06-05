@@ -13,9 +13,13 @@ export default function Nav() {
   useEffect(() => {
     setUser(loadUser());
     setMounted(true);
-    const onStorage = () => setUser(loadUser());
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    const onChange = () => setUser(loadUser());
+    window.addEventListener("storage", onChange);
+    window.addEventListener("auth-change", onChange);
+    return () => {
+      window.removeEventListener("storage", onChange);
+      window.removeEventListener("auth-change", onChange);
+    };
   }, []);
 
   // Evita mismatch SSR vs client: enquanto não montou, não renderiza links que
@@ -42,9 +46,8 @@ export default function Nav() {
   if (user.urRole === "Teacher") {
     return (
       <nav className="flex gap-4 text-sm text-slate-400 items-center">
+        <NavLink href="/dashboard">Dashboard</NavLink>
         <NavLink href="/modules">Módulos</NavLink>
-        <NavLink href="/modules/new">Novo módulo</NavLink>
-        <NavLink href="/cas">Calculadora</NavLink>
         <UserChip user={user} onLogout={logout} />
       </nav>
     );
@@ -55,9 +58,7 @@ export default function Nav() {
     <nav className="flex gap-4 text-sm text-slate-400 items-center">
       <NavLink href="/roadmap">Roadmap</NavLink>
       <NavLink href="/modules">Módulos</NavLink>
-      <NavLink href="/diagnostic">Diagnóstico</NavLink>
       <NavLink href="/progress">Progresso</NavLink>
-      <NavLink href="/cas">Calculadora</NavLink>
       <UserChip user={user} onLogout={logout} />
     </nav>
   );
@@ -74,12 +75,16 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
 function UserChip({ user, onLogout }: { user: User; onLogout: () => void }) {
   return (
     <span className="flex items-center gap-2 ml-2 pl-3 border-l border-slate-800">
-      <span className="text-slate-300 text-xs">
+      <Link
+        href="/profile"
+        className="text-slate-300 text-xs hover:text-slate-100"
+        title="Ver perfil"
+      >
         {user.urName}{" "}
         <span className="text-slate-500">
           ({user.urRole === "Teacher" ? "Prof" : "Aluno"})
         </span>
-      </span>
+      </Link>
       <button
         onClick={onLogout}
         className="text-xs px-2 py-1 rounded border border-slate-700 hover:bg-slate-800"
