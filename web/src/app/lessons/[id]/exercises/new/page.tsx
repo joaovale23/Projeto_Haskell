@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
+import { AlternativesEditor } from "@/components/AlternativesEditor";
 import { api, type ExerciseKind } from "@/lib/api";
+import { useRequireRole } from "@/lib/useRequireRole";
 
 export default function NewExercisePage({
   params,
@@ -11,16 +13,16 @@ export default function NewExercisePage({
 }) {
   const { id } = use(params);
   const lessonId = Number(id);
+  const { ready, allowed } = useRequireRole("Teacher");
   const router = useRouter();
   const [kind, setKind] = useState<ExerciseKind>("MultipleChoice");
   const [prompt, setPrompt] = useState("");
-  const [optionsText, setOptionsText] = useState("");
+  const [options, setOptions] = useState<string[]>(["", ""]);
   const [correctIdx, setCorrectIdx] = useState(0);
   const [numericAnswer, setNumericAnswer] = useState("");
   const [tolerance, setTolerance] = useState("0.01");
   const [textAnswer, setTextAnswer] = useState("");
   const [explanation, setExplanation] = useState("");
-  const [orderIdx, setOrderIdx] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -32,12 +34,15 @@ export default function NewExercisePage({
       let payload: unknown = null;
       let answer: unknown = null;
       switch (kind) {
-        case "MultipleChoice":
-          payload = {
-            options: optionsText.split("\n").map((s) => s.trim()).filter(Boolean),
-          };
+        case "MultipleChoice": {
+          const opts = options.map((s) => s.trim());
+          if (opts.length < 2 || opts.some((o) => !o)) {
+            throw new Error("Informe ao menos 2 alternativas, todas preenchidas.");
+          }
+          payload = { options: opts };
           answer = correctIdx;
           break;
+        }
         case "Numeric":
           payload = { tolerance: Number(tolerance) };
           answer = Number(numericAnswer);
@@ -54,7 +59,7 @@ export default function NewExercisePage({
         erqPayload: payload,
         erqAnswer: answer,
         erqExplanation: explanation,
-        erqOrderIdx: orderIdx,
+        erqOrderIdx: 0, // ignorado: posição atribuída automaticamente (ordem de adição)
       });
       router.push(`/lessons/${lessonId}`);
     } catch (err) {
@@ -63,6 +68,9 @@ export default function NewExercisePage({
       setLoading(false);
     }
   }
+
+  if (!ready) return <p className="text-slate-400">Carregando...</p>;
+  if (!allowed) return null;
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
@@ -91,26 +99,16 @@ export default function NewExercisePage({
         </Field>
 
         {kind === "MultipleChoice" && (
-          <>
-            <Field label="Alternativas (uma por linha)">
-              <textarea
-                required
-                rows={4}
-                value={optionsText}
-                onChange={(e) => setOptionsText(e.target.value)}
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Índice da alternativa correta (0-based)">
-              <input
-                type="number"
-                min={0}
-                value={correctIdx}
-                onChange={(e) => setCorrectIdx(Number(e.target.value))}
-                className={inputCls}
-              />
-            </Field>
-          </>
+          <Field label="Alternativas">
+            <AlternativesEditor
+              options={options}
+              correctIdx={correctIdx}
+              onChange={(opts, idx) => {
+                setOptions(opts);
+                setCorrectIdx(idx);
+              }}
+            />
+          </Field>
         )}
 
         {kind === "Numeric" && (
@@ -156,16 +154,6 @@ export default function NewExercisePage({
             rows={2}
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
-            className={inputCls}
-          />
-        </Field>
-
-        <Field label="Ordem">
-          <input
-            type="number"
-            min={1}
-            value={orderIdx}
-            onChange={(e) => setOrderIdx(Number(e.target.value))}
             className={inputCls}
           />
         </Field>
