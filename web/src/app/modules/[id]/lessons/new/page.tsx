@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { api } from "@/lib/api";
+import { useRequireRole } from "@/lib/useRequireRole";
 
 const TEMPLATE = `# Título da lição
 
@@ -33,10 +34,10 @@ export default function NewLessonPage({
 }) {
   const { id } = use(params);
   const moduleId = Number(id);
+  const { ready, allowed } = useRequireRole("Teacher");
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState(TEMPLATE);
-  const [orderIdx, setOrderIdx] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -49,7 +50,7 @@ export default function NewLessonPage({
         lrqModuleId: moduleId,
         lrqTitle: title,
         lrqContent: content,
-        lrqOrderIdx: orderIdx,
+        lrqOrderIdx: 0, // ignorado: a posição é atribuída automaticamente pelo backend
       });
       router.push(`/modules/${moduleId}`);
     } catch (err) {
@@ -58,6 +59,9 @@ export default function NewLessonPage({
       setLoading(false);
     }
   }
+
+  if (!ready) return <p className="text-slate-400">Carregando...</p>;
+  if (!allowed) return null;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -73,17 +77,6 @@ export default function NewLessonPage({
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className={inputCls}
-          />
-        </Field>
-
-        <Field label="Ordem">
-          <input
-            type="number"
-            min={1}
-            required
-            value={orderIdx}
-            onChange={(e) => setOrderIdx(Number(e.target.value))}
             className={inputCls}
           />
         </Field>
