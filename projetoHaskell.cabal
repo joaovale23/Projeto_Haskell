@@ -50,6 +50,7 @@ library
         Repositories.ModuleRepo
         Repositories.LessonRepo
         Repositories.ExerciseRepo
+        Repositories.ExerciseResponseRepo
         Repositories.ProgressRepo
         Repositories.DiagnosticRepo
         Services.AuthService
@@ -60,6 +61,8 @@ library
         Services.ProgressService
         Services.RoadmapService
         Services.DiagnosticService
+        Services.DashboardService
+        Services.ProfileService
         API.Types
         API.Routes
         Handlers.Auth
@@ -69,6 +72,8 @@ library
         Handlers.Progress
         Handlers.Roadmap
         Handlers.Diagnostic
+        Handlers.Dashboard
+        Handlers.Profile
         Server
     build-depends:
         servant,
@@ -115,9 +120,11 @@ test-suite projetoHaskell-test
         Unit.Domain.DiagnosticSpec
         Unit.Domain.PermissionsSpec
         Unit.Services.AuthServiceSpec
+        Unit.Services.DashboardServiceSpec
     build-depends:
         projetoHaskell,
         hspec,
-        containers
+        containers,
+        persistent
     build-tool-depends:
         hspec-discover:hspec-discover
