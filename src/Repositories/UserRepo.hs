@@ -2,11 +2,12 @@ module Repositories.UserRepo
   ( findByEmail
   , insertUser
   , findById
+  , updateUser
   ) where
 
 import Control.Monad.IO.Class (MonadIO)
 import Data.Text (Text)
-import Database.Persist (Entity, getBy, insert)
+import Database.Persist (Entity, getBy, insert, replace)
 import Database.Persist.Sql (SqlPersistT, get)
 import Database.Schema
 
@@ -18,3 +19,6 @@ insertUser = insert
 
 findById :: MonadIO m => UserId -> SqlPersistT m (Maybe User)
 findById = get
+
+updateUser :: MonadIO m => UserId -> User -> SqlPersistT m ()
+updateUser = replace
