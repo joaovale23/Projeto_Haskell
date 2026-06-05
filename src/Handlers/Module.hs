@@ -40,13 +40,13 @@ handleCreate :: Maybe Int64 -> ModuleRequest -> AppM ModuleResponse
 handleCreate userId ModuleRequest{..} = do
   Permission.checkTeacher userId
   let prereq = toSqlKey <$> mrqPrerequisiteId
-  mid <- ModuleSvc.createModule mrqTitle mrqSlug mrqDescription mrqOrderIdx prereq
+  (mid, idx) <- ModuleSvc.createModule mrqTitle mrqSlug mrqDescription prereq
   pure ModuleResponse
     { mrsId             = fromSqlKey mid
     , mrsTitle          = mrqTitle
     , mrsSlug           = mrqSlug
     , mrsDescription    = mrqDescription
-    , mrsOrderIdx       = mrqOrderIdx
+    , mrsOrderIdx       = idx
     , mrsPrerequisiteId = mrqPrerequisiteId
     }
 
