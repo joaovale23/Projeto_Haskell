@@ -11,6 +11,7 @@ import Data.Int (Int64)
 import Database.Persist (Entity (..))
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
 import Database.Schema
+import Domain.Types (Role (Teacher))
 import Servant
 import qualified Services.ExerciseService as ExerciseSvc
 import qualified Services.PermissionService as Permission
@@ -23,26 +24,33 @@ exerciseServer =
   :<|> handleDelete
   :<|> handleSubmit
 
-handleGet :: Int64 -> AppM ExerciseResponse
-handleGet rawId = do
+handleGet :: Int64 -> Maybe Int64 -> AppM ExerciseResponse
+handleGet rawId userId = do
   let eid = toSqlKey rawId :: ExerciseId
   result <- ExerciseSvc.getExercise eid
   case result of
-    Just e  -> pure (toExerciseResponse (Entity eid e))
     Nothing -> liftIO (throwIO err404 { errBody = "Exercicio nao encontrado" })
+    Just e  -> do
+      requester <- Permission.loadUser userId
+      let isTeacher = (userRole <$> requester) == Just Teacher
+      pure $ if isTeacher
+        then toExerciseResponseFull (Entity eid e)
+        else toExerciseResponse (Entity eid e)
 
 handleCreate :: Maybe Int64 -> ExerciseRequest -> AppM ExerciseResponse
 handleCreate userId ExerciseRequest{..} = do
   Permission.checkTeacher userId
   let lid = toSqlKey erqLessonId :: LessonId
-  eid <- ExerciseSvc.createExercise lid erqKind erqPrompt erqPayload erqAnswer erqExplanation erqOrderIdx
+  (eid, idx) <- ExerciseSvc.createExercise lid erqKind erqPrompt erqPayload erqAnswer erqExplanation
   pure ExerciseResponse
-    { ersId       = fromSqlKey eid
-    , ersLessonId = erqLessonId
-    , ersKind     = erqKind
-    , ersPrompt   = erqPrompt
-    , ersPayload  = erqPayload
-    , ersOrderIdx = erqOrderIdx
+    { ersId          = fromSqlKey eid
+    , ersLessonId    = erqLessonId
+    , ersKind        = erqKind
+    , ersPrompt      = erqPrompt
+    , ersPayload     = erqPayload
+    , ersOrderIdx    = idx
+    , ersAnswer      = Just erqAnswer
+    , ersExplanation = Just erqExplanation
     }
 
 handleUpdate :: Int64 -> Maybe Int64 -> ExerciseRequest -> AppM ExerciseResponse
@@ -56,12 +64,14 @@ handleUpdate rawId userId ExerciseRequest{..} = do
     Just _  -> do
       ExerciseSvc.updateExercise eid lid erqKind erqPrompt erqPayload erqAnswer erqExplanation erqOrderIdx
       pure ExerciseResponse
-        { ersId       = rawId
-        , ersLessonId = erqLessonId
-        , ersKind     = erqKind
-        , ersPrompt   = erqPrompt
-        , ersPayload  = erqPayload
-        , ersOrderIdx = erqOrderIdx
+        { ersId          = rawId
+        , ersLessonId    = erqLessonId
+        , ersKind        = erqKind
+        , ersPrompt      = erqPrompt
+        , ersPayload     = erqPayload
+        , ersOrderIdx    = erqOrderIdx
+        , ersAnswer      = Just erqAnswer
+        , ersExplanation = Just erqExplanation
         }
 
 handleDelete :: Int64 -> Maybe Int64 -> AppM NoContent
@@ -72,9 +82,9 @@ handleDelete rawId userId = do
 
 handleSubmit :: Int64 -> Maybe Int64 -> SubmitExerciseRequest -> AppM SubmitExerciseResponse
 handleSubmit rawId userId SubmitExerciseRequest{..} = do
-  _ <- Permission.requireUser userId
+  uid <- Permission.requireUserId userId
   let eid = toSqlKey rawId :: ExerciseId
-  result <- ExerciseSvc.submitAnswer eid serAnswer
+  result <- ExerciseSvc.submitAnswer uid eid serAnswer
   case result of
     ExerciseSvc.SubmitOk correct expl ->
       pure SubmitExerciseResponse
