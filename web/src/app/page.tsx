@@ -1,17 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { loadUser, type User } from "@/lib/api";
+import { homeFor } from "@/lib/api";
+import { useUser } from "@/lib/useUser";
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setUser(loadUser());
-    setMounted(true);
-  }, []);
+  const user = useUser();
 
   return (
     <div className="space-y-6">
@@ -21,7 +15,7 @@ export default function Home() {
         funções como input/output, derivadas como taxa de mudança, integrais como
         acumulação.
       </p>
-      {!mounted ? null : !user ? (
+      {user === undefined ? null : !user ? (
         <div className="flex gap-3">
           <Link
             href="/login"
@@ -36,34 +30,13 @@ export default function Home() {
             Cadastrar
           </Link>
         </div>
-      ) : user.urRole === "Teacher" ? (
-        <div className="flex gap-3">
-          <Link
-            href="/modules"
-            className="px-4 py-2 rounded bg-pink-500 text-white text-sm hover:bg-pink-400"
-          >
-            Gerenciar módulos
-          </Link>
-          <Link
-            href="/modules/new"
-            className="px-4 py-2 rounded border border-slate-700 text-sm hover:bg-slate-800"
-          >
-            Novo módulo
-          </Link>
-        </div>
       ) : (
         <div className="flex gap-3 flex-wrap">
           <Link
-            href="/roadmap"
+            href={homeFor(user.urRole)}
             className="px-4 py-2 rounded bg-pink-500 text-white text-sm hover:bg-pink-400"
           >
-            Meu roadmap
-          </Link>
-          <Link
-            href="/diagnostic"
-            className="px-4 py-2 rounded border border-slate-700 text-sm hover:bg-slate-800"
-          >
-            Fazer diagnóstico
+            {user.urRole === "Teacher" ? "Ir para o painel" : "Ir para o meu roadmap"}
           </Link>
           <Link
             href="/modules"
