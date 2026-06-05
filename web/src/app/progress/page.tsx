@@ -2,19 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { api, type ProgressEntry } from "@/lib/api";
+import { useRequireRole } from "@/lib/useRequireRole";
 
 export default function ProgressPage() {
+  const { ready, allowed } = useRequireRole("Student");
   const [entries, setEntries] = useState<ProgressEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!allowed) return;
     api
       .listProgress()
       .then(setEntries)
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : "Erro")
       );
-  }, []);
+  }, [allowed]);
+
+  if (!ready) return <p className="text-slate-400">Carregando...</p>;
+  if (!allowed) return null;
 
   if (error)
     return (
