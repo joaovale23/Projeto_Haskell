@@ -35,6 +35,11 @@ User
     name Text
     role Role
     createdAt UTCTime
+    course Text Maybe
+    enrollment Text Maybe
+    semester Text Maybe
+    shift Text Maybe
+    discipline Text Maybe
     UniqueEmail email
     deriving Show
 
@@ -70,6 +75,15 @@ Progress
     completed Bool
     completedAt UTCTime
     UniqueUserLesson userId lessonId
+    deriving Show
+
+ExerciseAttempt
+    userId UserId
+    exerciseId ExerciseId
+    answer Text
+    correct Bool
+    answeredAt UTCTime
+    UniqueUserExercise userId exerciseId
     deriving Show
 
 DiagnosticQuestion
