@@ -14,9 +14,13 @@ export function useUser(): User | null | undefined {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   useEffect(() => {
     setUser(loadUser());
-    const onStorage = () => setUser(loadUser());
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    const onChange = () => setUser(loadUser());
+    window.addEventListener("storage", onChange);
+    window.addEventListener("auth-change", onChange);
+    return () => {
+      window.removeEventListener("storage", onChange);
+      window.removeEventListener("auth-change", onChange);
+    };
   }, []);
   return user;
 }
