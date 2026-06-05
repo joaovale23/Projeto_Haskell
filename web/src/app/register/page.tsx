@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { api, type Role, saveUser } from "@/lib/api";
+import { api, homeFor, type Role, saveUser } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -10,6 +10,11 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("Student");
+  const [course, setCourse] = useState("");
+  const [enrollment, setEnrollment] = useState("");
+  const [semester, setSemester] = useState("");
+  const [shift, setShift] = useState("");
+  const [discipline, setDiscipline] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -23,9 +28,14 @@ export default function RegisterPage() {
         rrName: name,
         rrPassword: password,
         rrRole: role,
+        rrCourse: role === "Student" ? course.trim() || null : null,
+        rrEnrollment: role === "Student" ? enrollment.trim() || null : null,
+        rrSemester: role === "Student" ? semester.trim() || null : null,
+        rrShift: role === "Student" ? shift.trim() || null : null,
+        rrDiscipline: role === "Teacher" ? discipline.trim() || null : null,
       });
       saveUser(user);
-      router.push("/modules");
+      router.push(homeFor(user.urRole));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao cadastrar");
     } finally {
@@ -75,6 +85,59 @@ export default function RegisterPage() {
             <option value="Teacher">Professor</option>
           </select>
         </Field>
+
+        {role === "Teacher" ? (
+          <Field label="Disciplina">
+            <input
+              type="text"
+              value={discipline}
+              onChange={(e) => setDiscipline(e.target.value)}
+              className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
+            />
+          </Field>
+        ) : (
+          <>
+            <Field label="Curso">
+              <input
+                type="text"
+                value={course}
+                onChange={(e) => setCourse(e.target.value)}
+                className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
+              />
+            </Field>
+            <Field label="Matrícula">
+              <input
+                type="text"
+                value={enrollment}
+                onChange={(e) => setEnrollment(e.target.value)}
+                className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Semestre">
+                <input
+                  type="text"
+                  value={semester}
+                  onChange={(e) => setSemester(e.target.value)}
+                  className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
+                />
+              </Field>
+              <Field label="Turno">
+                <select
+                  value={shift}
+                  onChange={(e) => setShift(e.target.value)}
+                  className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
+                >
+                  <option value="">—</option>
+                  <option value="Matutino">Matutino</option>
+                  <option value="Vespertino">Vespertino</option>
+                  <option value="Noturno">Noturno</option>
+                </select>
+              </Field>
+            </div>
+          </>
+        )}
+
         {error && <p className="text-red-400 text-sm">{error}</p>}
         <button
           type="submit"
