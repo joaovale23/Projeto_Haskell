@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { api, saveUser } from "@/lib/api";
+import { api, homeFor, saveUser } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function LoginPage() {
     try {
       const user = await api.login({ lrEmail: email, lrPassword: password });
       saveUser(user);
-      router.push("/modules");
+      router.push(homeFor(user.urRole));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao entrar");
     } finally {
