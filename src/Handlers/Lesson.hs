@@ -11,6 +11,7 @@ import Data.Int (Int64)
 import Database.Persist (Entity (..))
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
 import Database.Schema
+import Domain.Types (Role (Teacher))
 import Servant
 import qualified Services.ExerciseService as ExerciseSvc
 import qualified Services.LessonService as LessonSvc
@@ -23,6 +24,7 @@ lessonServer =
   :<|> handleUpdate
   :<|> handleDelete
   :<|> handleListExercises
+  :<|> handleListResponses
 
 handleGet :: Int64 -> AppM LessonResponse
 handleGet rawId = do
@@ -36,13 +38,13 @@ handleCreate :: Maybe Int64 -> LessonRequest -> AppM LessonResponse
 handleCreate userId LessonRequest{..} = do
   Permission.checkTeacher userId
   let mid = toSqlKey lrqModuleId :: ModuleId
-  lid <- LessonSvc.createLesson mid lrqTitle lrqContent lrqOrderIdx
+  (lid, idx) <- LessonSvc.createLesson mid lrqTitle lrqContent
   pure LessonResponse
     { lrsId       = fromSqlKey lid
     , lrsModuleId = lrqModuleId
     , lrsTitle    = lrqTitle
     , lrsContent  = lrqContent
-    , lrsOrderIdx = lrqOrderIdx
+    , lrsOrderIdx = idx
     }
 
 handleUpdate :: Int64 -> Maybe Int64 -> LessonRequest -> AppM LessonResponse
@@ -69,7 +71,17 @@ handleDelete rawId userId = do
   LessonSvc.deleteLesson (toSqlKey rawId :: LessonId)
   pure NoContent
 
-handleListExercises :: Int64 -> AppM [ExerciseResponse]
-handleListExercises rawId = do
+handleListExercises :: Int64 -> Maybe Int64 -> AppM [ExerciseResponse]
+handleListExercises rawId userId = do
   let lid = toSqlKey rawId :: LessonId
-  map toExerciseResponse <$> ExerciseSvc.listByLesson lid
+  requester <- Permission.loadUser userId
+  let toResp = if (userRole <$> requester) == Just Teacher
+        then toExerciseResponseFull
+        else toExerciseResponse
+  map toResp <$> ExerciseSvc.listByLesson lid
+
+handleListResponses :: Int64 -> Maybe Int64 -> AppM [ExerciseResponseEntry]
+handleListResponses rawId userId = do
+  uid <- Permission.requireUserId userId
+  let lid = toSqlKey rawId :: LessonId
+  map toExerciseResponseEntry <$> ExerciseSvc.listResponsesForLesson uid lid
