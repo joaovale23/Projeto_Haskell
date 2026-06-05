@@ -15,7 +15,9 @@ authServer = handleRegister :<|> handleLogin
 
 handleRegister :: RegisterRequest -> AppM UserResponse
 handleRegister RegisterRequest{..} = do
-  result <- Auth.register rrEmail rrPassword rrName rrRole
+  result <-
+    Auth.register rrEmail rrPassword rrName rrRole
+      rrCourse rrEnrollment rrSemester rrShift rrDiscipline
   case result of
     Right entity                  -> pure (toUserResponse entity)
     Left  Auth.EmailAlreadyExists -> liftIO (throwIO err409 { errBody = "Email ja cadastrado" })
