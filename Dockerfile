@@ -1,5 +1,5 @@
 # ---- Build stage ----
-FROM haskell:9.4.8-slim AS build
+FROM haskell:9.4.8-slim-bullseye AS build
 
 # libpq para persistent-postgresql
 RUN apt-get update \
