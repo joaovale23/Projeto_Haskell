@@ -1,8 +1,11 @@
 # ---- Build stage ----
-FROM haskell:9.4.8-slim-bullseye AS build
+FROM haskell:9.4.8-slim AS build
 
-# libpq para persistent-postgresql
-RUN apt-get update \
+# A imagem 9.4.8 é baseada no Debian buster, que foi movido para
+# archive.debian.org. Reaponta o apt para o arquivo (Release expirado, daí o
+# Check-Valid-Until=false) e instala o libpq para o persistent-postgresql.
+RUN printf 'deb http://archive.debian.org/debian buster main\ndeb http://archive.debian.org/debian-security buster/updates main\n' > /etc/apt/sources.list \
+    && apt-get -o Acquire::Check-Valid-Until=false update \
     && apt-get install -y --no-install-recommends libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
