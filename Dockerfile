@@ -17,7 +17,10 @@ RUN cabal update
 # Copia apenas os arquivos de configuração primeiro para aproveitar o cache de
 # dependências (só refaz o build de deps se .cabal/cabal.project mudarem).
 COPY projetoHaskell.cabal cabal.project ./
-RUN cabal build exe:projetoHaskell --only-dependencies -j
+# Mira a biblioteca (não o exe): assim o --only-dependencies compila apenas as
+# dependências externas, sem tentar pré-processar a lib interna (que ainda não
+# tem o src/ copiado). O exe só adiciona warp/wai, que já são deps da lib.
+RUN cabal build lib:projetoHaskell --only-dependencies -j
 
 # Agora copia o código-fonte e compila o executável. Usamos `cabal build` +
 # `list-bin` (em vez de `cabal install`) para evitar o passo de sdist, que
