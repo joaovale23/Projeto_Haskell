@@ -17,13 +17,16 @@ RUN cabal update
 # Copia apenas os arquivos de configuração primeiro para aproveitar o cache de
 # dependências (só refaz o build de deps se .cabal/cabal.project mudarem).
 COPY projetoHaskell.cabal cabal.project ./
-RUN cabal build --only-dependencies -j
+RUN cabal build exe:projetoHaskell --only-dependencies -j
 
-# Agora copia o código-fonte e compila o executável
+# Agora copia o código-fonte e compila o executável. Usamos `cabal build` +
+# `list-bin` (em vez de `cabal install`) para evitar o passo de sdist, que
+# empacotaria a test-suite e exigiria a pasta test/ no contexto.
 COPY src ./src
 COPY app ./app
-RUN cabal install exe:projetoHaskell \
-        --installdir=/dist --install-method=copy --overwrite-policy=always
+RUN cabal build exe:projetoHaskell \
+    && mkdir -p /dist \
+    && cp "$(cabal list-bin exe:projetoHaskell)" /dist/projetoHaskell
 
 # ---- Runtime stage ----
 FROM debian:bookworm-slim
