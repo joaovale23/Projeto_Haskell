@@ -7,7 +7,8 @@ Plataforma educacional para ensino de Cálculo I voltada para programadores, des
 ## Stack
 
 - **Backend**: Haskell (GHC 9.6.7) · Servant · Persistent + PostgreSQL · ReaderT Pattern · Hspec
-- **Frontend**: Next.js 16 · TypeScript · Tailwind CSS · marked (render de markdown)
+- **Frontend**: Next.js 16 · TypeScript · Tailwind CSS · marked (markdown) · Mafs + expr-eval (visualizadores) · KaTeX
+- **Microserviço**: Python 3.12 · FastAPI · SymPy (cálculo simbólico, `sympy_service/`)
 - **Banco**: PostgreSQL 14+ (testado com 18 local)
 
 ## Estrutura
@@ -17,8 +18,9 @@ Plataforma educacional para ensino de Cálculo I voltada para programadores, des
 ├── app/                # Entry point Haskell (Main.hs)
 ├── src/                # Biblioteca: App, Config, Database, Domain, Repositories,
 │                       # Services, API, Handlers, Server
-├── test/               # Suite Hspec (51 testes, todos nas regras puras)
-├── web/                # Frontend Next.js (11 rotas)
+├── test/               # Suite Hspec (57 testes: regras puras de Domain + Services)
+├── web/                # Frontend Next.js (16 rotas)
+├── sympy_service/      # Microserviço Python/FastAPI + SymPy (24 testes pytest)
 ├── projetoHaskell.cabal
 ├── cabal.project
 ├── docker-compose.yml  # Postgres + Adminer (opcional)
@@ -60,7 +62,7 @@ cabal build all
 cabal run projetoHaskell
 ```
 
-Na primeira execução o app roda as migrações automaticamente (7 tabelas: `user`, `module`, `lesson`, `exercise`, `progress`, `diagnostic_question`, `diagnostic_result`).
+Na primeira execução o app roda as migrações automaticamente (8 tabelas: `user`, `module`, `lesson`, `exercise`, `progress`, `exercise_attempt`, `diagnostic_question`, `diagnostic_result`).
 
 ## Rodando os testes
 
@@ -68,15 +70,16 @@ Na primeira execução o app roda as migrações automaticamente (7 tabelas: `us
 cabal test --test-show-details=direct
 ```
 
-**51 testes unitários** cobrem regras puras de domínio:
+**57 testes unitários** cobrem as regras puras de `Domain/` e funções puras de `Services/`:
 - `canAccessModule` — desbloqueio de módulos
 - `Password` — hash determinístico e verificação
 - `checkAnswer` — MultipleChoice / Numeric / OpenText
 - `percent` — cálculo de progresso (0..100, edge cases)
 - `buildRoadmap` — cascata de desbloqueio
-- `analyze` — classificação de forças e fraquezas + recomendações
+- `analyze` — classificação de forças e fraquezas + recomendações (diagnóstico)
 - `requireTeacher` — permissões por Role
-- `validateEmail` / `validatePassword`
+- `validateEmail` / `validatePassword` (AuthService)
+- agregações do dashboard do professor (DashboardService)
 
 ## Executando o frontend
 
@@ -92,20 +95,26 @@ Abre em `http://localhost:3000`. Rotas:
 |---|---|
 | `/` | Landing simples |
 | `/register` · `/login` | Cadastro e login |
-| `/roadmap` | Árvore de módulos com badges Concluído / Disponível / Bloqueado |
+| `/roadmap` | Árvore de módulos (Aluno) com badges Concluído / Disponível / Bloqueado |
 | `/modules` · `/modules/new` | Listar e criar (Teacher) módulos |
-| `/modules/[id]` | Detalhe do módulo + lições + botão "marcar concluída" |
-| `/lessons/[id]` | Conteúdo (markdown) + exercícios com submissão e feedback |
-| `/lessons/[id]/exercises/new` | Criar exercício (Teacher) |
-| `/diagnostic` | Avaliação diagnóstica + resultado |
-| `/progress` | Histórico de lições concluídas |
+| `/modules/[id]` · `/modules/[id]/edit` | Detalhe e edição (Teacher) do módulo + lições + "marcar concluída" |
+| `/modules/[id]/lessons/new` | Criar lição (Teacher) |
+| `/lessons/[id]` · `/lessons/[id]/edit` | Conteúdo (markdown + visualizadores) + exercícios com submissão e feedback |
+| `/lessons/[id]/exercises/new` · `/lessons/[id]/exercises/[exId]/edit` | Criar e editar exercício (Teacher) |
+| `/progress` | Histórico de lições concluídas (Aluno) |
+| `/dashboard` | Painel do professor (estatísticas da turma) |
+| `/profile` | Perfil do usuário |
+
+> A avaliação diagnóstica existe no **backend** (`/diagnostic/*`), mas ainda não tem tela dedicada no frontend.
 
 ## Endpoints da API
 
 ### Auth (sem token)
 
 ```
-POST /auth/register   { rrEmail, rrPassword, rrName, rrRole }   -> User
+POST /auth/register   { rrEmail, rrPassword, rrName, rrRole,
+                        rrCourse?, rrEnrollment?, rrSemester?,
+                        rrShift?, rrDiscipline? }                -> User
 POST /auth/login      { lrEmail, lrPassword }                   -> User | 401
 ```
 
@@ -128,7 +137,8 @@ DELETE /modules/:id             (X-User-Id: Teacher)
 
 ```
 GET    /lessons/:id
-GET    /lessons/:id/exercises
+GET    /lessons/:id/exercises   (X-User-Id)  # Teacher recebe gabarito/explicação
+GET    /lessons/:id/responses   (X-User-Id)  # respostas já enviadas pelo aluno
 POST   /lessons                 (X-User-Id: Teacher)
 PUT    /lessons/:id             (X-User-Id: Teacher)
 DELETE /lessons/:id             (X-User-Id: Teacher)
@@ -164,6 +174,21 @@ GET    /roadmap                 (X-User-Id) -> [RoadmapItem]
 GET    /diagnostic/questions
 POST   /diagnostic/submit       (X-User-Id) { dsAnswers: [{ daQuestionId, daSelectedIdx }] }
 GET    /diagnostic/result       (X-User-Id) -> último resultado
+```
+
+### Dashboard (Teacher)
+
+```
+GET    /dashboard               (X-User-Id: Teacher) -> estatísticas da turma
+```
+
+### Profile (qualquer usuário autenticado)
+
+```
+GET    /profile                 (X-User-Id) -> dados do usuário
+PUT    /profile                 (X-User-Id) { puName, puCourse?, puEnrollment?,
+                                              puSemester?, puShift?, puDiscipline? }
+DELETE /profile                 (X-User-Id) -> remove a própria conta
 ```
 
 ## Exemplo de fluxo via curl
@@ -230,7 +255,7 @@ Estas funções são totalmente independentes de IO e cobertas pelos 51 testes H
 
 ## Microserviço SymPy (Fase 4)
 
-Serviço HTTP isolado em `sympy_service/` — Python 3.12 + FastAPI + SymPy — expõe cálculo simbólico via REST. Consumido **diretamente pelo frontend Next.js** (tela `/cas`); o backend Haskell **não** intermedia.
+Serviço HTTP isolado em `sympy_service/` — Python 3.12 + FastAPI + SymPy — expõe cálculo simbólico via REST. É um serviço **independente** (Dockerfile próprio em `sympy_service/`): o backend Haskell **não** intermedia. A integração com o frontend Next.js (tela `/cas`) ainda **não** foi construída.
 
 ### Endpoints
 
@@ -259,11 +284,12 @@ Abra `http://localhost:8001/docs` para testar visualmente.
 
 ### Setup com Docker
 
-A partir da raiz:
+O serviço tem o próprio `Dockerfile` (não está no `docker-compose.yml` da raiz, que só sobe Postgres + Adminer):
 
 ```bash
-docker compose up -d sympy
-docker compose logs -f sympy
+cd sympy_service
+docker build -t sympy-service .
+docker run --rm -p 8001:8001 sympy-service
 ```
 
 ### Testes (pytest)
@@ -284,9 +310,9 @@ curl -X POST http://localhost:8001/symbolic/derivative \
 # {"result":"2*x + cos(x)","latex":"2 x + \\cos{\\left(x \\right)}"}
 ```
 
-### Tela `/cas` no frontend
+### Tela `/cas` no frontend (planejada)
 
-Calculadora simbólica usando o microserviço. Aluno e Professor acessam pela nav "Calculadora". Renderiza o resultado em LaTeX via KaTeX e mantém histórico das últimas 5 chamadas (client-side).
+Calculadora simbólica consumindo este microserviço, com render do resultado em LaTeX via KaTeX. **Ainda não implementada** no frontend — hoje o serviço é exercitado apenas via REST direto (Swagger em `/docs`, curl ou pytest).
 
 ---
 
@@ -343,10 +369,17 @@ quando você reduz `h` na fórmula `(f(a+h)-f(a))/h`:
 
 `Exercise.payload`/`answer`, `DiagnosticQuestion.options` e `DiagnosticResult.strengths`/`weaknesses`/`recommendedSlugs` são armazenados como `Text` (JSON serializado). A conversão para `Aeson.Value` acontece nos serviços e no `API.Types.decodeStored`. Decisão pragmática: evita depender de `JSONB` específico do Postgres, mantém o schema portável.
 
+## Já implementado nas fases recentes
+
+- Visualizadores interativos (Mafs + expr-eval) embutidos em lições — ver seção acima
+- Microserviço Python + SymPy para cálculo simbólico (`sympy_service/`)
+- Dashboard do professor com estatísticas da turma
+- Perfil do usuário (visualização, edição e exclusão de conta)
+
 ## Fora de escopo (próximas fases)
 
-- JWT, refresh tokens, sessões (Fase 3 quando aplicável)
-- Visualizadores Desmos/Mafs para limites e derivadas (Fase 3)
-- Microserviço Python + SymPy para cálculo simbólico (Fase 4)
+- JWT, refresh tokens, sessões (hoje a autorização usa apenas o header `X-User-Id`)
+- Tela `/cas` no frontend consumindo o microserviço SymPy
+- Tela de avaliação diagnóstica no frontend (endpoints já existem)
 - Property-based testing (QuickCheck)
-- Histórico de tentativas em exercícios
+- Múltiplas tentativas por exercício (hoje a primeira resposta é definitiva)
