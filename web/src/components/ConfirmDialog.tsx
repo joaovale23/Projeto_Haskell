@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { Button } from "@/components/ui";
 
 export function ConfirmDialog({
   open,
@@ -43,29 +44,19 @@ export function ConfirmDialog({
       aria-modal="true"
     >
       <div
-        className="w-full max-w-sm rounded-lg border border-slate-700 bg-slate-900 p-5 space-y-4 shadow-xl"
+        className="w-full max-w-sm space-y-4 rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-medium text-slate-100">{title}</h2>
         <p className="text-sm text-slate-300">{message}</p>
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
         <div className="flex justify-end gap-2 pt-1">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={loading}
-            className="px-3 py-1.5 rounded border border-slate-700 text-sm hover:bg-slate-800 disabled:opacity-50"
-          >
+          <Button variant="secondary" size="sm" onClick={onCancel} disabled={loading}>
             {cancelLabel}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={loading}
-            className="px-3 py-1.5 rounded bg-red-600 text-white text-sm hover:bg-red-500 disabled:opacity-50"
-          >
+          </Button>
+          <Button variant="dangerSolid" size="sm" onClick={onConfirm} disabled={loading}>
             {loading ? "Excluindo..." : confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

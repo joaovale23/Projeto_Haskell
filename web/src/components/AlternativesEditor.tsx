@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, controlClasses } from "@/components/ui";
+
 /**
  * Editor dinâmico de alternativas de múltipla escolha.
  * - Marca a alternativa correta diretamente (radio), sem informar índice.
@@ -62,33 +64,30 @@ export function AlternativesEditor({
               value={opt}
               onChange={(e) => updateOption(i, e.target.value)}
               placeholder={`Alternativa ${i + 1}`}
-              className={`flex-1 px-3 py-2 rounded bg-slate-900 border outline-none ${
+              className={
                 isCorrect
-                  ? "border-emerald-500"
-                  : "border-slate-700 focus:border-pink-400"
-              }`}
+                  ? `${controlClasses} flex-1 border-emerald-500`
+                  : `${controlClasses} flex-1`
+              }
             />
             {isCorrect && (
-              <span className="text-xs text-emerald-400 shrink-0">✓ correta</span>
+              <span className="shrink-0 text-xs text-emerald-400">✓ correta</span>
             )}
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => removeOption(i)}
               disabled={options.length <= 1}
-              className="text-xs px-2 py-1 rounded border border-slate-700 hover:bg-slate-800 disabled:opacity-40 shrink-0"
+              className="shrink-0"
             >
               Remover
-            </button>
+            </Button>
           </div>
         );
       })}
-      <button
-        type="button"
-        onClick={addOption}
-        className="text-xs px-3 py-1 rounded border border-slate-700 hover:bg-slate-800"
-      >
+      <Button variant="secondary" size="sm" onClick={addOption}>
         + Adicionar alternativa
-      </button>
+      </Button>
       <p className="text-xs text-slate-500">
         Selecione o círculo à esquerda para marcar a alternativa correta.
       </p>

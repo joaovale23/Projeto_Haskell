@@ -15,6 +15,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { api, type RoadmapItem } from "@/lib/api";
 import { useRequireRole } from "@/lib/useRequireRole";
+import { EmptyState, ErrorText, Loading } from "@/components/ui";
 
 type Status = "locked" | "notStarted" | "inProgress" | "done";
 
@@ -185,17 +186,19 @@ export default function RoadmapPage() {
   const doneLessons = (items ?? []).reduce((s, i) => s + i.riCompletedLessons, 0);
   const overall = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
 
-  if (!ready) return <p className="text-slate-400">Carregando...</p>;
+  if (!ready) return <Loading />;
   if (!allowed) return null;
-  if (error) return <p className="text-red-400">{error}</p>;
-  if (!items) return <p className="text-slate-400">Carregando...</p>;
+  if (error) return <ErrorText>{error}</ErrorText>;
+  if (!items) return <Loading />;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-semibold">Seu roadmap</h1>
-          <p className="text-slate-400 text-sm mt-1">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Seu roadmap
+          </h1>
+          <p className="text-sm text-slate-400">
             Conclua todas as lições de um módulo para desbloquear os próximos.
           </p>
         </div>
@@ -211,7 +214,7 @@ export default function RoadmapPage() {
       </div>
 
       {items.length === 0 ? (
-        <p className="text-slate-400 text-sm">Nenhum módulo cadastrado ainda.</p>
+        <EmptyState>Nenhum módulo cadastrado ainda.</EmptyState>
       ) : (
         <div className="h-[70vh] rounded-lg border border-slate-800 bg-slate-950/40">
           <ReactFlow

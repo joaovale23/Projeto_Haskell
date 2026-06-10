@@ -13,6 +13,15 @@ import {
 } from "@/lib/api";
 import { useDeleteConfirm } from "@/lib/useDeleteConfirm";
 import { useUser } from "@/lib/useUser";
+import {
+  Button,
+  ErrorText,
+  Field,
+  Input,
+  Loading,
+  PageHeader,
+  Select,
+} from "@/components/ui";
 
 export default function ProfilePage() {
   const user = useUser();
@@ -110,125 +119,102 @@ export default function ProfilePage() {
     });
   }
 
-  if (error && !profile) return <p className="text-red-400">{error}</p>;
-  if (!profile) return <p className="text-slate-400">Carregando...</p>;
+  if (error && !profile) return <ErrorText>{error}</ErrorText>;
+  if (!profile) return <Loading />;
 
   const isTeacher = profile.prRole === "Teacher";
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
+    <div className="mx-auto max-w-xl space-y-8">
       <ConfirmDialog {...dialogProps} />
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Meu perfil</h1>
-          <p className="text-sm text-slate-400 mt-1">
-            {isTeacher ? "Professor" : "Aluno"}
-          </p>
-        </div>
-        {!editing && (
-          <button
-            type="button"
-            onClick={startEdit}
-            title="Editar perfil"
-            aria-label="Editar perfil"
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-slate-700 hover:bg-slate-800"
-          >
-            <PencilIcon />
-            Editar
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Meu perfil"
+        description={isTeacher ? "Professor" : "Aluno"}
+        actions={
+          !editing && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={startEdit}
+              title="Editar perfil"
+              aria-label="Editar perfil"
+            >
+              <PencilIcon />
+              Editar
+            </Button>
+          )
+        }
+      />
 
       {saved && !editing && (
-        <p className="text-emerald-400 text-sm">Perfil salvo.</p>
+        <p className="text-sm text-emerald-400">Perfil salvo.</p>
       )}
 
       {editing ? (
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-5">
           <Field label="Nome">
-            <input
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={inputCls}
-            />
+            <Input required value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
 
           <Field label="E-mail">
-            <input value={profile.prEmail} disabled className={`${inputCls} opacity-60`} />
+            <Input value={profile.prEmail} disabled />
           </Field>
 
           {isTeacher ? (
             <Field label="Disciplina">
-              <input
+              <Input
                 value={discipline}
                 onChange={(e) => setDiscipline(e.target.value)}
-                className={inputCls}
               />
             </Field>
           ) : (
             <>
               <Field label="Curso">
-                <input
-                  value={course}
-                  onChange={(e) => setCourse(e.target.value)}
-                  className={inputCls}
-                />
+                <Input value={course} onChange={(e) => setCourse(e.target.value)} />
               </Field>
               <Field label="Matrícula">
-                <input
+                <Input
                   value={enrollment}
                   onChange={(e) => setEnrollment(e.target.value)}
-                  className={inputCls}
                 />
               </Field>
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Semestre">
-                  <input
+                  <Input
                     value={semester}
                     onChange={(e) => setSemester(e.target.value)}
-                    className={inputCls}
                   />
                 </Field>
                 <Field label="Turno">
-                  <select
-                    value={shift}
-                    onChange={(e) => setShift(e.target.value)}
-                    className={inputCls}
-                  >
+                  <Select value={shift} onChange={(e) => setShift(e.target.value)}>
                     <option value="">—</option>
                     <option value="Matutino">Matutino</option>
                     <option value="Vespertino">Vespertino</option>
                     <option value="Noturno">Noturno</option>
-                  </select>
+                  </Select>
                 </Field>
               </div>
             </>
           )}
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <ErrorText>{error}</ErrorText>}
 
           <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-4 py-2 rounded bg-pink-500 text-white text-sm hover:bg-pink-400 disabled:opacity-50"
-            >
+            <Button type="submit" disabled={saving}>
               {saving ? "Salvando..." : "Salvar"}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="secondary"
               onClick={cancelEdit}
               disabled={saving}
-              className="px-4 py-2 rounded border border-slate-700 text-sm hover:bg-slate-800 disabled:opacity-50"
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       ) : (
-        <dl className="space-y-3 rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+        <dl className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/50 p-5">
           <Row label="Nome" value={profile.prName} />
           <Row label="E-mail" value={profile.prEmail} />
           {isTeacher ? (
@@ -244,28 +230,12 @@ export default function ProfilePage() {
         </dl>
       )}
 
-      <div className="pt-2 border-t border-slate-800">
-        <button
-          type="button"
-          onClick={onDeleteAccount}
-          className="text-sm px-3 py-1.5 rounded border border-red-800 text-red-300 hover:bg-red-950"
-        >
+      <div className="border-t border-slate-800 pt-4">
+        <Button variant="danger" size="sm" onClick={onDeleteAccount}>
           Excluir conta
-        </button>
+        </Button>
       </div>
     </div>
-  );
-}
-
-const inputCls =
-  "w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block text-sm space-y-1">
-      <span className="text-slate-300">{label}</span>
-      {children}
-    </label>
   );
 }
 
@@ -273,7 +243,7 @@ function Row({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="flex justify-between gap-4 text-sm">
       <dt className="text-slate-400">{label}</dt>
-      <dd className="text-slate-100 text-right">{value && value.trim() ? value : "—"}</dd>
+      <dd className="text-right text-slate-100">{value && value.trim() ? value : "—"}</dd>
     </div>
   );
 }

@@ -3,45 +3,38 @@
 import Link from "next/link";
 import { homeFor } from "@/lib/api";
 import { useUser } from "@/lib/useUser";
+import { buttonClasses } from "@/components/ui";
 
 export default function Home() {
   const user = useUser();
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-semibold">Cálculo para Devs</h1>
-      <p className="text-slate-300 max-w-2xl">
-        Aprenda Cálculo I traduzido para a linguagem mental de quem programa:
-        funções como input/output, derivadas como taxa de mudança, integrais como
-        acumulação.
-      </p>
+    <div className="space-y-8">
+      <div className="space-y-4">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          Cálculo para Devs
+        </h1>
+        <p className="max-w-2xl text-lg text-slate-300">
+          Aprenda Cálculo I traduzido para a linguagem mental de quem programa:
+          funções como input/output, derivadas como taxa de mudança, integrais como
+          acumulação.
+        </p>
+      </div>
       {user === undefined ? null : !user ? (
-        <div className="flex gap-3">
-          <Link
-            href="/login"
-            className="px-4 py-2 rounded bg-pink-500 text-white text-sm hover:bg-pink-400"
-          >
+        <div className="flex flex-wrap gap-3">
+          <Link href="/login" className={buttonClasses("primary", "md")}>
             Entrar
           </Link>
-          <Link
-            href="/register"
-            className="px-4 py-2 rounded border border-slate-700 text-sm hover:bg-slate-800"
-          >
+          <Link href="/register" className={buttonClasses("secondary", "md")}>
             Cadastrar
           </Link>
         </div>
       ) : (
-        <div className="flex gap-3 flex-wrap">
-          <Link
-            href={homeFor(user.urRole)}
-            className="px-4 py-2 rounded bg-pink-500 text-white text-sm hover:bg-pink-400"
-          >
+        <div className="flex flex-wrap gap-3">
+          <Link href={homeFor(user.urRole)} className={buttonClasses("primary", "md")}>
             {user.urRole === "Teacher" ? "Ir para o painel" : "Ir para o meu roadmap"}
           </Link>
-          <Link
-            href="/modules"
-            className="px-4 py-2 rounded border border-slate-700 text-sm hover:bg-slate-800"
-          >
+          <Link href="/modules" className={buttonClasses("secondary", "md")}>
             Ver módulos
           </Link>
         </div>

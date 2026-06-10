@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, homeFor, saveUser } from "@/lib/api";
+import { Button, ErrorText, Field, Input, PageHeader } from "@/components/ui";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,45 +28,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
-      <h1 className="text-2xl font-semibold">Entrar</h1>
-      <form onSubmit={onSubmit} className="space-y-4">
+    <div className="mx-auto max-w-md space-y-8">
+      <PageHeader title="Entrar" />
+      <form onSubmit={onSubmit} className="space-y-5">
         <Field label="Email">
-          <input
+          <Input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
           />
         </Field>
         <Field label="Senha">
-          <input
+          <Input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 focus:border-pink-400 outline-none"
           />
         </Field>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full px-4 py-2 rounded bg-pink-500 text-white text-sm hover:bg-pink-400 disabled:opacity-50"
-        >
+        {error && <ErrorText>{error}</ErrorText>}
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? "Entrando..." : "Entrar"}
-        </button>
+        </Button>
       </form>
     </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block text-sm space-y-1">
-      <span className="text-slate-300">{label}</span>
-      {children}
-    </label>
   );
 }

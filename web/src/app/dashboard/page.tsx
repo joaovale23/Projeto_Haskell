@@ -7,6 +7,7 @@ import {
   type DashboardModuleStat,
 } from "@/lib/api";
 import { useRequireRole } from "@/lib/useRequireRole";
+import { cardClasses, ErrorText, Loading, PageHeader } from "@/components/ui";
 
 export default function DashboardPage() {
   const { ready, allowed } = useRequireRole("Teacher");
@@ -23,10 +24,10 @@ export default function DashboardPage() {
       );
   }, [allowed]);
 
-  if (!ready) return <p className="text-slate-400">Carregando...</p>;
+  if (!ready) return <Loading />;
   if (!allowed) return null;
-  if (error) return <p className="text-red-400">{error}</p>;
-  if (!data) return <p className="text-slate-400">Carregando...</p>;
+  if (error) return <ErrorText>{error}</ErrorText>;
+  if (!data) return <Loading />;
 
   const topCompletion = [...data.dbModules]
     .sort((a, b) => b.dmsCompletionRate - a.dmsCompletionRate)
@@ -38,7 +39,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-semibold">Painel do professor</h1>
+      <PageHeader title="Painel do professor" />
 
       {/* Indicadores gerais */}
       <section className="grid gap-3 grid-cols-2 sm:grid-cols-4">
@@ -178,16 +179,16 @@ export default function DashboardPage() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="border border-slate-800 rounded p-4 bg-slate-900/50">
+    <div className={cardClasses()}>
       <p className="text-2xl font-semibold">{value}</p>
-      <p className="text-xs text-slate-400 mt-1">{label}</p>
+      <p className="mt-1 text-xs text-slate-400">{label}</p>
     </div>
   );
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border border-slate-800 rounded p-4 bg-slate-900/50 space-y-2">
+    <div className={cardClasses("space-y-2")}>
       <h3 className="text-sm text-slate-400">{title}</h3>
       {children}
     </div>

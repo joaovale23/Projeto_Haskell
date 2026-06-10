@@ -7,6 +7,16 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { api, type ApiLesson, type ApiModule } from "@/lib/api";
 import { useDeleteConfirm } from "@/lib/useDeleteConfirm";
 import { useUser } from "@/lib/useUser";
+import {
+  Button,
+  buttonClasses,
+  Card,
+  EmptyState,
+  ErrorText,
+  focusRing,
+  Loading,
+  PageHeader,
+} from "@/components/ui";
 
 export default function ModuleDetailPage({
   params,
@@ -88,98 +98,98 @@ export default function ModuleDetailPage({
     }
   }
 
-  if (error) return <p className="text-red-400">{error}</p>;
-  if (!mod || !lessons) return <p className="text-slate-400">Carregando...</p>;
+  if (error) return <ErrorText>{error}</ErrorText>;
+  if (!mod || !lessons) return <Loading />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <ConfirmDialog {...dialogProps} />
-      <div>
-        <Link href="/modules" className="text-sm text-slate-400 hover:text-slate-100">
-          ← Módulos
-        </Link>
-        <div className="flex items-start justify-between gap-4 mt-2">
-          <h1 className="text-3xl font-semibold">{mod.mrsTitle}</h1>
-          {user?.urRole === "Teacher" && (
-            <div className="flex gap-2 shrink-0">
+
+      <PageHeader
+        back={
+          <Link
+            href="/modules"
+            className={`inline-flex rounded-md text-sm text-slate-400 transition-colors hover:text-slate-100 ${focusRing}`}
+          >
+            ← Módulos
+          </Link>
+        }
+        title={mod.mrsTitle}
+        description={mod.mrsDescription}
+        actions={
+          user?.urRole === "Teacher" && (
+            <>
               <Link
                 href={`/modules/${moduleId}/edit`}
-                className="text-xs px-3 py-1 rounded border border-slate-700 hover:bg-slate-800"
+                className={buttonClasses("secondary", "sm")}
               >
                 Editar
               </Link>
-              <button
-                onClick={onDeleteModule}
-                className="text-xs px-3 py-1 rounded border border-red-800 text-red-300 hover:bg-red-950"
-              >
+              <Button variant="danger" size="sm" onClick={onDeleteModule}>
                 Excluir
-              </button>
-            </div>
+              </Button>
+            </>
+          )
+        }
+      />
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-xl font-medium">Lições</h2>
+          {user?.urRole === "Teacher" && (
+            <Link
+              href={`/modules/${moduleId}/lessons/new`}
+              className={buttonClasses("primary", "sm")}
+            >
+              + Nova lição
+            </Link>
           )}
         </div>
-        <p className="text-slate-300 mt-2">{mod.mrsDescription}</p>
-      </div>
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-medium">Lições</h2>
-        {user?.urRole === "Teacher" && (
-          <Link
-            href={`/modules/${moduleId}/lessons/new`}
-            className="text-xs px-3 py-1 rounded bg-pink-500 hover:bg-pink-400"
-          >
-            + Nova lição
-          </Link>
-        )}
-      </div>
-      {lessons.length === 0 && (
-        <p className="text-slate-400 text-sm">Nenhuma lição cadastrada.</p>
-      )}
-      <ul className="space-y-2">
-        {lessons.map((l) => (
-          <li
-            key={l.lrsId}
-            className="border border-slate-800 rounded p-4 bg-slate-900/50 flex items-center justify-between"
-          >
-            <div>
-              <Link
-                href={`/lessons/${l.lrsId}`}
-                className="font-medium hover:text-pink-400"
-              >
-                {l.lrsOrderIdx}. {l.lrsTitle}
-              </Link>
-            </div>
-            {user?.urRole === "Teacher" ? (
-              <div className="flex gap-2 shrink-0">
+        {lessons.length === 0 && <EmptyState>Nenhuma lição cadastrada.</EmptyState>}
+
+        <ul className="space-y-3">
+          {lessons.map((l) => (
+            <li key={l.lrsId}>
+              <Card className="flex items-center justify-between gap-4 !p-4">
                 <Link
-                  href={`/lessons/${l.lrsId}/edit`}
-                  className="text-xs px-3 py-1 rounded border border-slate-700 hover:bg-slate-800"
+                  href={`/lessons/${l.lrsId}`}
+                  className={`rounded-md font-medium text-slate-100 transition-colors hover:text-pink-400 ${focusRing}`}
                 >
-                  Editar
+                  {l.lrsOrderIdx}. {l.lrsTitle}
                 </Link>
-                <button
-                  onClick={() => onDeleteLesson(l.lrsId)}
-                  className="text-xs px-3 py-1 rounded border border-red-800 text-red-300 hover:bg-red-950"
-                >
-                  Excluir
-                </button>
-              </div>
-            ) : (
-              user && (
-                <button
-                  onClick={() => toggleCompleted(l.lrsId)}
-                  className={`px-3 py-1 rounded text-xs ${
-                    progress.has(l.lrsId)
-                      ? "bg-emerald-600 hover:bg-emerald-500"
-                      : "border border-slate-700 hover:bg-slate-800"
-                  }`}
-                >
-                  {progress.has(l.lrsId) ? "✓ Concluída" : "Marcar concluída"}
-                </button>
-              )
-            )}
-          </li>
-        ))}
-      </ul>
+                {user?.urRole === "Teacher" ? (
+                  <div className="flex shrink-0 gap-2">
+                    <Link
+                      href={`/lessons/${l.lrsId}/edit`}
+                      className={buttonClasses("secondary", "sm")}
+                    >
+                      Editar
+                    </Link>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => onDeleteLesson(l.lrsId)}
+                    >
+                      Excluir
+                    </Button>
+                  </div>
+                ) : (
+                  user && (
+                    <Button
+                      variant={progress.has(l.lrsId) ? "success" : "secondary"}
+                      size="sm"
+                      onClick={() => toggleCompleted(l.lrsId)}
+                    >
+                      {progress.has(l.lrsId) ? "✓ Concluída" : "Marcar concluída"}
+                    </Button>
+                  )
+                )}
+              </Card>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

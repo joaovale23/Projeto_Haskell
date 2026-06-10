@@ -6,3 +6,28 @@
 html, body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
+
+body {
+  /* Leitura confortável: corpo 16px com entrelinha generosa. */
+  font-size: 16px;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+/* Títulos um pouco mais justos que o corpo, para hierarquia clara. */
+h1, h2, h3 {
+  line-height: 1.25;
+}
+
+/* Acento da plataforma em controles nativos (checkbox/radio/range). */
+input, textarea, select {
+  accent-color: var(--color-pink-500);
+}
+
+/* Respeita usuários que pedem menos movimento. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

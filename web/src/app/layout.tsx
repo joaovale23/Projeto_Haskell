@@ -17,12 +17,15 @@ export default function RootLayout({
     <html lang="pt-BR" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-slate-950 text-slate-100">
         <header className="border-b border-slate-800 px-6 py-4 flex items-center gap-6 flex-wrap">
-          <Link href="/" className="font-semibold text-lg">
+          <Link
+            href="/"
+            className="font-semibold text-lg rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          >
             Cálculo<span className="text-pink-400">/Devs</span>
           </Link>
           <Nav />
         </header>
-        <main className="flex-1 px-6 py-8 max-w-5xl w-full mx-auto">
+        <main className="flex-1 px-6 py-10 max-w-5xl w-full mx-auto">
           {children}
         </main>
       </body>
