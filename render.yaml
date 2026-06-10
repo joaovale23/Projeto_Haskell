@@ -1,0 +1,19 @@
+databases:
+  - name: calculo-devs-db
+    databaseName: calculo_devs
+    user: devs
+    plan: free
+
+services:
+  - type: web
+    name: calculo-devs-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /modules
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: calculo-devs-db
+          property: connectionString
+      # PORT é injetado automaticamente pelo Render; o app já o lê.

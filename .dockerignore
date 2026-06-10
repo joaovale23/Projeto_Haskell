@@ -1,0 +1,14 @@
+dist-newstyle/
+dist/
+.git/
+.claude/
+.ghc.environment.*
+*.hi
+*.o
+web/
+sympy_service/
+calculo_para_devs/
+.env
+.env.local
+README.md
+CHANGELOG.md
