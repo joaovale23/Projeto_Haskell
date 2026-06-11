@@ -1,4 +1,4 @@
-# Cálculo para Devs
+# Cálculo para Devs 
 
 Plataforma educacional para ensino de Cálculo I voltada para programadores, desenvolvida como projeto da disciplina de Tópicos Especiais em Informática (Fatec Rubens Lara — Prof. Alexandre Garcia).
 
