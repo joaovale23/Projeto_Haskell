@@ -3,7 +3,6 @@ module Repositories.LessonRepo
   , findById
   , create
   , update
-  , delete
   , deleteCascade
   , nextOrderIdx
   , resequence
@@ -36,9 +35,6 @@ create = insert
 
 update :: MonadIO m => LessonId -> Lesson -> SqlPersistT m ()
 update = replace
-
-delete :: MonadIO m => LessonId -> SqlPersistT m ()
-delete = P.delete
 
 -- | Remove a lição junto de tudo que depende dela (exercícios e progresso),
 -- evitando registros órfãos e violação de FK.

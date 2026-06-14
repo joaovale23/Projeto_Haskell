@@ -26,8 +26,7 @@ instance FromJSON ExerciseKind
 derivePersistField "ExerciseKind"
 
 data SubmitError
-  = WrongPayloadShape
-  | InvalidAnswer
+  = InvalidAnswer
   deriving (Show, Eq)
 
 -- | Avalia uma resposta dado o tipo, o payload do enunciado, o gabarito e a submissão.

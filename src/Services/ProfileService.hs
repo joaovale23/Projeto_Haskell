@@ -40,11 +40,10 @@ updateProfile uid name course enrollment semester shift discipline = runDb $ do
       UserRepo.updateUser uid u'
       pure (Just u')
 
--- | Exclui a conta do usuário junto dos dados que a referenciam (progresso,
--- tentativas de exercício e resultados de diagnóstico), evitando órfãos/FK.
+-- | Exclui a conta do usuário junto dos dados que a referenciam (progresso
+-- e tentativas de exercício), evitando órfãos/FK.
 deleteProfile :: UserId -> AppM ()
 deleteProfile uid = runDb $ do
   deleteWhere [ProgressUserId ==. uid]
   deleteWhere [ExerciseAttemptUserId ==. uid]
-  deleteWhere [DiagnosticResultUserId ==. uid]
   P.delete uid

@@ -3,7 +3,6 @@ module Repositories.ModuleRepo
   , findById
   , create
   , update
-  , delete
   , deleteCascade
   , nextOrderIdx
   , resequence
@@ -40,9 +39,6 @@ create = insert
 
 update :: MonadIO m => ModuleId -> Module -> SqlPersistT m ()
 update = replace
-
-delete :: MonadIO m => ModuleId -> SqlPersistT m ()
-delete = P.delete
 
 -- | Remove o módulo junto de suas lições (em cascata) e do próprio registro,
 -- evitando órfãos e violação de FK.

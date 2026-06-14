@@ -27,6 +27,7 @@ buildRoadmap
   -> Map Int64 Int              -- ^ lições concluídas pelo usuário por módulo
   -> Set Int64                  -- ^ módulos com 100% concluído (derivável dos mapas)
   -> [RoadmapItem a]
+
 buildRoadmap modules totals done completedModules =
   let completedList = Set.toList completedModules
   in map (toItem completedList) modules

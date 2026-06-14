@@ -42,9 +42,7 @@ library
         Domain.Module
         Domain.Password
         Domain.Exercise
-        Domain.Progress
         Domain.Roadmap
-        Domain.Diagnostic
         Domain.Permissions
         Repositories.UserRepo
         Repositories.ModuleRepo
@@ -52,7 +50,6 @@ library
         Repositories.ExerciseRepo
         Repositories.ExerciseResponseRepo
         Repositories.ProgressRepo
-        Repositories.DiagnosticRepo
         Services.AuthService
         Services.ModuleService
         Services.LessonService
@@ -60,7 +57,6 @@ library
         Services.ExerciseService
         Services.ProgressService
         Services.RoadmapService
-        Services.DiagnosticService
         Services.DashboardService
         Services.ProfileService
         API.Types
@@ -71,7 +67,6 @@ library
         Handlers.Exercise
         Handlers.Progress
         Handlers.Roadmap
-        Handlers.Diagnostic
         Handlers.Dashboard
         Handlers.Profile
         Server
@@ -115,9 +110,7 @@ test-suite projetoHaskell-test
         Unit.Domain.ModuleSpec
         Unit.Domain.PasswordSpec
         Unit.Domain.ExerciseSpec
-        Unit.Domain.ProgressSpec
         Unit.Domain.RoadmapSpec
-        Unit.Domain.DiagnosticSpec
         Unit.Domain.PermissionsSpec
         Unit.Services.AuthServiceSpec
         Unit.Services.DashboardServiceSpec

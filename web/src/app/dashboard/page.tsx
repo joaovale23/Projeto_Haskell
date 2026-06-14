@@ -51,7 +51,7 @@ export default function DashboardPage() {
 
       {/* Métricas de desempenho */}
       <section className="grid gap-4 sm:grid-cols-2">
-        <Panel title="Progresso médio das turmas">
+        <Panel title="Progresso médio dos alunos">
           <Gauge value={data.dbAvgProgress} />
         </Panel>
         <Panel title="Taxa média de acertos">

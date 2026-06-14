@@ -3,11 +3,10 @@ module Services.RoadmapService
   ) where
 
 import App.Monad (AppM, runDb)
-import Data.Int (Int64)
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Database.Persist (Entity (..))
-import Database.Persist.Sql (fromSqlKey, toSqlKey)
+import Database.Persist.Sql (fromSqlKey)
 import Database.Schema
 import Domain.Roadmap (RoadmapItem, buildRoadmap)
 import qualified Repositories.ModuleRepo as ModuleRepo
@@ -31,5 +30,3 @@ buildRoadmapForUser uid = do
         | Entity mid m <- modules
         ]
   pure (buildRoadmap tuples totalsInt doneInt completedModules)
-  where
-    _ = toSqlKey :: Int64 -> ModuleId

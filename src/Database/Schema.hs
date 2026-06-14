@@ -85,19 +85,4 @@ ExerciseAttempt
     answeredAt UTCTime
     UniqueUserExercise userId exerciseId
     deriving Show
-
-DiagnosticQuestion
-    topic Text
-    prompt Text
-    options Text
-    correctIdx Int
-    deriving Show
-
-DiagnosticResult
-    userId UserId
-    strengths Text
-    weaknesses Text
-    recommendedSlugs Text
-    createdAt UTCTime
-    deriving Show
 |]

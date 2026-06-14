@@ -15,7 +15,6 @@ import System.IO (hPutStrLn, stderr)
 import UnliftIO.Exception (tryAny)
 import Handlers.Auth (authServer)
 import Handlers.Dashboard (dashboardServer)
-import Handlers.Diagnostic (diagnosticServer)
 import Handlers.Exercise (exerciseServer)
 import Handlers.Lesson (lessonServer)
 import Handlers.Module (moduleServer)
@@ -38,7 +37,6 @@ server =
   :<|> exerciseServer
   :<|> progressServer
   :<|> roadmapServer
-  :<|> diagnosticServer
   :<|> dashboardServer
   :<|> profileServer
 

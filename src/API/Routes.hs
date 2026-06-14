@@ -9,7 +9,6 @@ module API.Routes
   , ExerciseAPI
   , ProgressAPI
   , RoadmapAPI
-  , DiagnosticAPI
   , DashboardAPI
   , ProfileAPI
   , apiProxy
@@ -64,12 +63,6 @@ type ProgressAPI =
 type RoadmapAPI =
        "roadmap" :> UserHeader :> Get '[JSON] [RoadmapItemResponse]
 
--- Diagnostic ----------------------------------------------------------
-type DiagnosticAPI =
-       "diagnostic" :> "questions" :> Get '[JSON] [DiagnosticQuestionResponse]
-  :<|> "diagnostic" :> "submit"    :> UserHeader :> ReqBody '[JSON] DiagnosticSubmission :> Post '[JSON] DiagnosticResultResponse
-  :<|> "diagnostic" :> "result"    :> UserHeader :> Get '[JSON] DiagnosticResultResponse
-
 -- Dashboard (professor) -----------------------------------------------
 type DashboardAPI =
        "dashboard" :> UserHeader :> Get '[JSON] DashboardResponse
@@ -88,7 +81,6 @@ type API =
   :<|> ExerciseAPI
   :<|> ProgressAPI
   :<|> RoadmapAPI
-  :<|> DiagnosticAPI
   :<|> DashboardAPI
   :<|> ProfileAPI
 

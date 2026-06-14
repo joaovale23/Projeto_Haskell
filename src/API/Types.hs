@@ -38,12 +38,6 @@ module API.Types
   , DashboardModuleStat (..)
   , DashboardActivity (..)
   , DashboardStudent (..)
-    -- Diagnostic
-  , DiagnosticQuestionResponse (..)
-  , toDiagnosticQuestionResponse
-  , DiagnosticAnswer (..)
-  , DiagnosticSubmission (..)
-  , DiagnosticResultResponse (..)
     -- Helpers
   , decodeStored
   ) where
@@ -371,44 +365,3 @@ data DashboardResponse = DashboardResponse
   } deriving (Generic, Show)
 instance FromJSON DashboardResponse
 instance ToJSON DashboardResponse
-
--- Diagnostic ----------------------------------------------------------
-
-data DiagnosticQuestionResponse = DiagnosticQuestionResponse
-  { dqId      :: Int64
-  , dqTopic   :: Text
-  , dqPrompt  :: Text
-  , dqOptions :: Value
-  } deriving (Generic, Show)
-instance FromJSON DiagnosticQuestionResponse
-instance ToJSON DiagnosticQuestionResponse
-
-toDiagnosticQuestionResponse :: Entity DiagnosticQuestion -> DiagnosticQuestionResponse
-toDiagnosticQuestionResponse (Entity qid q) = DiagnosticQuestionResponse
-  { dqId      = fromSqlKey qid
-  , dqTopic   = diagnosticQuestionTopic q
-  , dqPrompt  = diagnosticQuestionPrompt q
-  , dqOptions = decodeStored (diagnosticQuestionOptions q)
-  }
-
-data DiagnosticAnswer = DiagnosticAnswer
-  { daQuestionId  :: Int64
-  , daSelectedIdx :: Int
-  } deriving (Generic, Show)
-instance FromJSON DiagnosticAnswer
-instance ToJSON DiagnosticAnswer
-
-newtype DiagnosticSubmission = DiagnosticSubmission
-  { dsAnswers :: [DiagnosticAnswer]
-  } deriving (Generic, Show)
-instance FromJSON DiagnosticSubmission
-instance ToJSON DiagnosticSubmission
-
-data DiagnosticResultResponse = DiagnosticResultResponse
-  { drStrengths        :: Value
-  , drWeaknesses       :: Value
-  , drRecommendedSlugs :: Value
-  , drCreatedAt        :: UTCTime
-  } deriving (Generic, Show)
-instance FromJSON DiagnosticResultResponse
-instance ToJSON DiagnosticResultResponse
